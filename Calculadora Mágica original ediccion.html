@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)https://luishparedes.github.io/magica_pro-web/ -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Mágica</title>
+    <link rel="stylesheet" href="./Calculadora Mágica original ediccion_files/styles.css">
+    <script src="./Calculadora Mágica original ediccion_files/jspdf.umd.min.js.descarga"></script>
+    <script src="./Calculadora Mágica original ediccion_files/jspdf.plugin.autotable.min.js.descarga"></script>
+    <style>
+        /* Estilos para el mensaje de derechos de autor */
+        .copyright-notice {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #f8f9fa;
+            border-left: 5px solid #dc3545;
+            padding: 15px;
+            max-width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out;
+            display: none;
+        }
+        
+        .copyright-notice.show {
+            display: block;
+        }
+        
+        .copyright-notice .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .copyright-notice strong {
+            color: #dc3545;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .copyright-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 999;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Icono flotante de copyright -->
+    <div class="copyright-icon" onclick="toggleCopyrightNotice()">©</div>
+    
+    <!-- Mensaje de derechos de autor -->
+    <div class="copyright-notice" id="copyrightNotice">
+        <button class="close-btn" onclick="toggleCopyrightNotice()">×</button>
+        <strong>ADVERTENCIA:</strong> Este sistema está protegido por derechos de autor. 
+        <strong>No revendas tu código de acceso</strong> o será bloqueado y perderás tu dinero. 
+        Cualquier uso no autorizado será penalizado según las leyes aplicables.
+    </div>
+
+    <div class="calculator">
+        <h2>Calculadora Mágica</h2>
+        
+        <!-- Sección Nombre Establecimiento -->
+        <section>
+            <h3>Nombre del Establecimiento</h3>
+            <input type="text" id="nombreEstablecimiento" placeholder="Ej: Tienda La Bendición">
+            <button onclick="guardarNombreEstablecimiento()">Guardar Nombre</button>
+        </section>
+
+        <!-- Sección Tasa BCV -->
+        <section>
+            <h3>Tasa BCV</h3>
+            <input type="number" id="tasaBCV" placeholder="Tasa BCV" required="true">
+            <button onclick="actualizarTasaBCV()">Actualizar Tasa BCV</button>
+        </section>
+
+        <!-- Sección Datos Producto -->
+        <section>
+            <h3>Datos del Producto</h3>
+            <input type="text" id="producto" placeholder="Nombre del producto" required="true">
+            <input type="number" id="costo" placeholder="Costo del producto" required="true">
+            <select id="descripcion" required="true">
+                <option value="">Selecciona una descripción</option>
+                <option value="viveres">Víveres</option>
+                <option value="gaseosas">Gaseosas</option>
+                <option value="licores">Licores</option>
+                <option value="enlatados">Enlatados</option>
+                <option value="plasticos">Plásticos</option>
+                <option value="papeleria">Papelería</option>
+                <option value="lacteos">Lácteos</option>
+                <option value="ferreteria">Ferretería</option>
+                <option value="agropecuaria">Agropecuaria</option>
+                <option value="frigorifico">Frigorífico</option>
+                <option value="pescaderia">Pescadería</option>
+                <option value="repuesto">Repuesto</option>
+                <option value="confiteria">Confitería</option>
+                <option value="ropa">Ropa</option>
+                <option value="calzados">Calzados</option>
+                <option value="otros">Otros</option>
+            </select>
+        </section>
+
+        <!-- Sección Precio Venta -->
+        <section>
+            <h3>Precio de Venta</h3>
+            <input type="number" id="ganancia" placeholder="Porcentaje de ganancia" required="true">
+            <input type="number" id="unidades" placeholder="Unidades que trae la caja" required="true">
+            <button onclick="calcularPrecioVenta()">Calcular Precio de Venta</button>
+            <p id="resultadoPrecioVenta">Precio al mayor: </p>
+            <p id="precioUnitario">Precio unitario: </p>
+        </section>
+
+        <button onclick="guardarProducto()">Guardar Producto</button>
+    </div>
+
+    <!-- Lista de Productos -->
+    <div id="listaProductos">
+        <input type="text" id="buscar" placeholder="Buscar producto">
+        <button onclick="buscarProducto()">Buscar</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Descripción</th>
+                    <th>Precio Mayor ($)</th>
+                    <th>Precio Mayor (Bs)</th>
+                    <th>Precio Unitario ($)</th>
+                    <th>Precio Unitario (Bs)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody><tr>
+            <td>ACE MUTI CLEAN 400G</td>
+            <td>otros</td>
+            <td>$1.09</td>
+            <td>Bs115.51</td>
+            <td>$1.09</td>
+            <td>Bs115.51</td>
+            <td>
+                <button class="editar" onclick="editarProducto(7)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(7)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(7)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>ARROZ MARY SUPERI0R 900G</td>
+            <td>viveres</td>
+            <td>$1.37</td>
+            <td>Bs144.87</td>
+            <td>$1.37</td>
+            <td>Bs144.87</td>
+            <td>
+                <button class="editar" onclick="editarProducto(3)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(3)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(3)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>ARROZ MARY TRADICIONAL 900G</td>
+            <td>viveres</td>
+            <td>$1.34</td>
+            <td>Bs142.51</td>
+            <td>$1.34</td>
+            <td>Bs142.51</td>
+            <td>
+                <button class="editar" onclick="editarProducto(4)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(4)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(4)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>ARROZ SANTONI PREMIUM</td>
+            <td>viveres</td>
+            <td>$1.37</td>
+            <td>Bs145.44</td>
+            <td>$1.37</td>
+            <td>Bs145.44</td>
+            <td>
+                <button class="editar" onclick="editarProducto(1)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(1)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(1)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>HARINA PAN DE ARR0Z</td>
+            <td>viveres</td>
+            <td>$1.08</td>
+            <td>Bs114.63</td>
+            <td>$1.08</td>
+            <td>Bs114.63</td>
+            <td>
+                <button class="editar" onclick="editarProducto(6)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(6)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(6)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>HARINA PAN PAN</td>
+            <td>viveres</td>
+            <td>$1.18</td>
+            <td>Bs125.27</td>
+            <td>$1.18</td>
+            <td>Bs125.27</td>
+            <td>
+                <button class="editar" onclick="editarProducto(0)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(0)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(0)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>JAB0N LAS LLAVES BEBE 160G</td>
+            <td>otros</td>
+            <td>$0.80</td>
+            <td>Bs84.80</td>
+            <td>$0.80</td>
+            <td>Bs84.80</td>
+            <td>
+                <button class="editar" onclick="editarProducto(10)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(10)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(10)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>JABON LAS LLAVES TRADICIONAL FLORAL 200G</td>
+            <td>otros</td>
+            <td>$0.76</td>
+            <td>Bs80.76</td>
+            <td>$0.76</td>
+            <td>Bs80.76</td>
+            <td>
+                <button class="editar" onclick="editarProducto(18)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(18)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(18)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>JUGO MANZANA  EL TUNAL 1L</td>
+            <td>lacteos</td>
+            <td>$1.98</td>
+            <td>Bs210.23</td>
+            <td>$1.98</td>
+            <td>Bs210.23</td>
+            <td>
+                <button class="editar" onclick="editarProducto(19)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(19)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(19)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>JUGO MANZANA EL TUNAL 200ML</td>
+            <td>lacteos</td>
+            <td>$0.72</td>
+            <td>Bs75.90</td>
+            <td>$0.72</td>
+            <td>Bs75.90</td>
+            <td>
+                <button class="editar" onclick="editarProducto(20)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(20)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(20)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>JUGO MANZANA TUNAL 1 LT</td>
+            <td>lacteos</td>
+            <td>$1.96</td>
+            <td>Bs208.26</td>
+            <td>$1.96</td>
+            <td>Bs208.26</td>
+            <td>
+                <button class="editar" onclick="editarProducto(2)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(2)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(2)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>KONGA 30G</td>
+            <td>viveres</td>
+            <td>$0.57</td>
+            <td>Bs60.16</td>
+            <td>$0.57</td>
+            <td>Bs60.16</td>
+            <td>
+                <button class="editar" onclick="editarProducto(9)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(9)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(9)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>MANTEQUILLA MAVESA 250G</td>
+            <td>viveres</td>
+            <td>$1.37</td>
+            <td>Bs145.44</td>
+            <td>$1.37</td>
+            <td>Bs145.44</td>
+            <td>
+                <button class="editar" onclick="editarProducto(15)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(15)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(15)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>MANTEQUILLA NELLY 250G</td>
+            <td>viveres</td>
+            <td>$1.23</td>
+            <td>Bs130.46</td>
+            <td>$1.23</td>
+            <td>Bs130.46</td>
+            <td>
+                <button class="editar" onclick="editarProducto(13)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(13)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(13)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>MANTEQUILLA NELLY 500G</td>
+            <td>viveres</td>
+            <td>$2.36</td>
+            <td>Bs250.66</td>
+            <td>$2.36</td>
+            <td>Bs250.66</td>
+            <td>
+                <button class="editar" onclick="editarProducto(14)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(14)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(14)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>MAYONESA MAVESA 175G</td>
+            <td>viveres</td>
+            <td>$1.75</td>
+            <td>Bs185.50</td>
+            <td>$1.75</td>
+            <td>Bs185.50</td>
+            <td>
+                <button class="editar" onclick="editarProducto(8)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(8)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(8)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>MAYONESA MAVESA 445G</td>
+            <td>viveres</td>
+            <td>$3.59</td>
+            <td>Bs380.42</td>
+            <td>$3.59</td>
+            <td>Bs380.42</td>
+            <td>
+                <button class="editar" onclick="editarProducto(16)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(16)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(16)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>PEPITONA MARGARITA 140G</td>
+            <td>viveres</td>
+            <td>$1.85</td>
+            <td>Bs195.79</td>
+            <td>$1.85</td>
+            <td>Bs195.79</td>
+            <td>
+                <button class="editar" onclick="editarProducto(17)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(17)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(17)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>POLLO</td>
+            <td>otros</td>
+            <td>$3.50</td>
+            <td>Bs370.74</td>
+            <td>$3.50</td>
+            <td>Bs370.74</td>
+            <td>
+                <button class="editar" onclick="editarProducto(21)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(21)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(21)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>REFRESCO SUN COLA 400ML</td>
+            <td>gaseosas</td>
+            <td>$0.52</td>
+            <td>Bs55.06</td>
+            <td>$0.52</td>
+            <td>Bs55.06</td>
+            <td>
+                <button class="editar" onclick="editarProducto(5)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(5)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(5)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>SALSA DE TOMATE KETCHUP 198G</td>
+            <td>viveres</td>
+            <td>$1.37</td>
+            <td>Bs145.12</td>
+            <td>$1.37</td>
+            <td>Bs145.12</td>
+            <td>
+                <button class="editar" onclick="editarProducto(11)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(11)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(11)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>SALSA DE TOMATE KETCHUP 397G</td>
+            <td>viveres</td>
+            <td>$2.17</td>
+            <td>Bs230.38</td>
+            <td>$2.17</td>
+            <td>Bs230.38</td>
+            <td>
+                <button class="editar" onclick="editarProducto(12)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(12)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(12)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>TOSTONES TOM 140 GR</td>
+            <td>confiteria</td>
+            <td>$1.51</td>
+            <td>Bs160.03</td>
+            <td>$1.51</td>
+            <td>Bs160.03</td>
+            <td>
+                <button class="editar" onclick="editarProducto(23)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(23)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(23)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>TOSTONES TOM 28GR</td>
+            <td>confiteria</td>
+            <td>$0.43</td>
+            <td>Bs45.21</td>
+            <td>$0.43</td>
+            <td>Bs45.21</td>
+            <td>
+                <button class="editar" onclick="editarProducto(22)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(22)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(22)">Eliminar</button>
+            </td>
+        </tr><tr>
+            <td>TOSTONES TOM 80GR</td>
+            <td>confiteria</td>
+            <td>$1.04</td>
+            <td>Bs110.36</td>
+            <td>$1.04</td>
+            <td>Bs110.36</td>
+            <td>
+                <button class="editar" onclick="editarProducto(24)">Editar</button>
+                <button class="imprimir" onclick="imprimirTicket(24)">Imprimir</button>
+                <button class="eliminar" onclick="eliminarProducto(24)">Eliminar</button>
+            </td>
+        </tr></tbody>
+        </table>
+
+        <!-- Botones de Acción -->
+        <div class="action-buttons">
+            <button onclick="generarPDF()" class="generar-pdf">Generar PDF</button>
+            <button onclick="mostrarListaCostos()" class="lista-costos">Mostrar Lista de Costos</button>
+            <button onclick="cerrarSesion()" class="btn-cerrar-sesion">✅ Cerrar Sesión</button>
+            <button onclick="limpiarLista()" class="limpiar-lista">Limpiar Lista</button>
+        </div>
+
+        <!-- Lista de Costos (oculta por defecto) -->
+        <div id="listaCostosContainer" style="display: none;">
+            <h3>Lista de Costos de Productos</h3>
+            <button onclick="generarPDFCostos()" class="generar-pdf-costos">📄 Convertir a PDF</button>
+            <ul id="listaCostos"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Función para mostrar/ocultar el mensaje de copyright
+        function toggleCopyrightNotice() {
+            const notice = document.getElementById('copyrightNotice');
+            notice.classList.toggle('show');
+        }
+        
+        // Mostrar el mensaje automáticamente al cargar la página (después de 5 segundos)
+        setTimeout(() => {
+            toggleCopyrightNotice();
+            // Ocultar después de 15 segundos
+            setTimeout(() => {
+                const notice = document.getElementById('copyrightNotice');
+                if (notice.classList.contains('show')) {
+                    notice.classList.remove('show');
+                }
+            }, 15000);
+        }, 5000);
+    </script>
+    
+    <script src="./Calculadora Mágica original ediccion_files/script.js.descarga"></script>
+
+
+</body></html>
